@@ -1,0 +1,26 @@
+name: Telegram job started notification
+description: Post the github build URL to a group, channel or chat when a job started
+inputs:
+  token:
+    description: Telegram token (bot key).
+    required: false
+  chat-id:
+    description: chat ID.
+    required: false
+runs:
+  using: composite
+  steps:
+    - uses: ReeganExE/github-action-job-id@v1.0
+    - shell: bash
+      run: |
+        token="${{ inputs.token }}"
+        token=${token:-"$TELEGRAM_BOT_TOKEN"}
+
+        chat_id="${{ inputs.chat-id }}"
+        chat_id=${chat_id:-"$TELEGRAM_CHAT_ID"}
+        if [ -z "$token" ] OR [ -z "$chat_id" ]; then
+          echo "Invalid input"
+          exit 1
+        fi
+
+        curl --fail -s -o /dev/null "https://api.telegram.org/bot$token/sendMessage?chat_id=$chat_id" -d text="$GH_JOB_0_HTML_URL"
